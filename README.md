@@ -31,7 +31,7 @@ cp .env.example .env      # sous Windows : copy .env.example .env
 npm start
 ```
 
-Ouvrez ensuite **http://localhost:3000**. Sans configuration, l'interface démarre quand même (mode portefeuille seul),
+Ouvrez ensuite **http://localhost:9000**. Sans configuration, l'interface démarre quand même (mode portefeuille seul),
 et l'onglet « Tableau de bord » vous dit qu'il manque la configuration.
 
 ### Trouver START_BLOCK
