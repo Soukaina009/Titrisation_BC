@@ -7,12 +7,14 @@ const { ethers } = require('ethers');
 const { open, getMeta, resetChainData } = require('./src/db');
 const { computeKpis } = require('./src/kpis');
 const { Indexer } = require('./src/indexer');
+const { listOffres, offreDetail } = require('./src/offres');
 
 const cfg = {
-  port: Number(process.env.PORT || 3000),
+  port: Number(process.env.PORT || 9000),
   rpc: process.env.RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com',
   registry: process.env.REGISTRY_ADDRESS || '',
   factory: process.env.FACTORY_ADDRESS || '',
+  saleFactory: process.env.SALE_FACTORY_ADDRESS || '',
   startBlock: process.env.START_BLOCK !== undefined && process.env.START_BLOCK !== '' ? Number(process.env.START_BLOCK) : null,
   chunk: Number(process.env.LOG_CHUNK || 2000),
   confirmations: Number(process.env.CONFIRMATIONS || 1),
@@ -30,7 +32,7 @@ let chainId = null;
 let indexer = null;
 
 app.get('/api/config', (_req, res) => res.json({
-  registry: cfg.registry || null, factory: cfg.factory || null, chainId,
+  registry: cfg.registry || null, factory: cfg.factory || null, saleFactory: cfg.saleFactory || null, chainId,
   explorer: process.env.EXPLORER_URL || EXPLORERS[chainId] || null
 }));
 
@@ -63,6 +65,19 @@ app.get('/api/parcelles/:id', (req, res) => {
   res.json({ ...row, historique, titrisation });
 });
 
+// Offres publiques de parts (ICO / STO) : liste (filtrable par parcelle) et détail avec journal des opérations.
+app.get('/api/offres', (req, res) => {
+  const rows = listOffres(db);
+  const t = String(req.query.parcelle ?? '').trim();
+  res.json(t === '' ? rows : rows.filter(r => String(r.token_id) === t));
+});
+app.get('/api/offres/:addr', (req, res) => {
+  if (!ethers.isAddress(req.params.addr)) return res.status(400).json({ error: 'Adresse invalide' });
+  const offre = offreDetail(db, req.params.addr);
+  if (!offre) return res.status(404).json({ error: 'Offre inconnue dans la base' });
+  res.json(offre);
+});
+
 app.get('/api/titrisations', (_req, res) => res.json(db.prepare('SELECT * FROM titrisations ORDER BY created_ts DESC').all()));
 
 app.get('/api/contacts', (_req, res) => res.json(db.prepare('SELECT address, nom FROM contacts ORDER BY nom').all()));
@@ -86,7 +101,7 @@ async function startIndexer() {
   let startBlock = cfg.startBlock ?? (local ? 0 : null);
   if (startBlock === null) { console.error('[indexeur] START_BLOCK manquant : indiquez dans .env le numéro du bloc de déploiement du registre (visible sur Etherscan).'); return; }
   if (process.argv.includes('--reindex')) { resetChainData(db); console.log('[indexeur] base vidée, reconstruction depuis la blockchain.'); }
-  indexer = new Indexer({ db, provider, registry: cfg.registry, factory: cfg.factory, startBlock, chunk: cfg.chunk, confirmations: cfg.confirmations });
+  indexer = new Indexer({ db, provider, registry: cfg.registry, factory: cfg.factory, saleFactory: cfg.saleFactory, startBlock, chunk: cfg.chunk, confirmations: cfg.confirmations });
   indexer.start(cfg.pollMs);
 }
 

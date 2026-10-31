@@ -1,4 +1,6 @@
 // Couche "KPIs" : tous les indicateurs sont calculés en SQL à partir de la base.
+const { offresKpis } = require('./offres');
+
 function computeKpis(db) {
   const one = (sql, ...p) => db.prepare(sql).get(...p);
   const all = (sql, ...p) => db.prepare(sql).all(...p);
@@ -29,6 +31,7 @@ function computeKpis(db) {
     titrisations: t.total,
     titrisationsActives: t.actives,
     partsEmises: t.parts,
+    offres: offresKpis(db),
     parVille: all(`SELECT ville, COUNT(*) AS nb, SUM(superficie) AS surface FROM parcelles
                    GROUP BY ville ORDER BY nb DESC, ville LIMIT 8`),
     parJour: all(`SELECT jour, nb FROM (

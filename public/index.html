@@ -42,8 +42,8 @@ button{font:inherit;cursor:pointer}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 .btn.small{padding:7px 11px;font-size:12.5px}
 .theme-toggle{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:16px}
-.tabs{display:flex;gap:6px;background:var(--card2);padding:5px;border-radius:12px;width:fit-content;margin-bottom:20px;border:1px solid var(--line)}
-.tab{padding:9px 18px;border-radius:9px;border:none;background:transparent;color:var(--muted);font-size:14px;font-weight:600}
+.tabs{display:flex;gap:6px;max-width:100%;overflow-x:auto;background:var(--card2);padding:5px;border-radius:12px;width:fit-content;margin-bottom:20px;border:1px solid var(--line)}
+.tab{white-space:nowrap;padding:9px 18px;border-radius:9px;border:none;background:transparent;color:var(--muted);font-size:14px;font-weight:600}
 .tab.active{background:var(--accent);color:var(--accent-ink)}
 .panel{display:none}
 .panel.active{display:block}
@@ -115,6 +115,43 @@ th{color:var(--muted);font-weight:600;font-size:12px}
 .explorer-link.secondary{margin-top:8px}
 .explorer-link.secondary a{border-color:transparent;color:var(--muted);font-size:12px;font-weight:500;padding:4px 10px}
 .explorer-link.secondary a:hover{background:var(--card2);color:var(--accent)}
+/* ---- Offres publiques de parts (ICO / STO) ---- */
+.offres-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-top:16px}
+.offre{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;transition:.15s;display:flex;flex-direction:column;gap:8px}
+.offre:hover{border-color:var(--accent);transform:translateY(-2px)}
+.offre-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.muted{color:var(--muted);font-size:12.5px}
+.mini{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.mini span{color:var(--muted)}
+.st{display:inline-block;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;vertical-align:middle;margin-left:6px}
+.st-run{background:var(--accent);color:var(--accent-ink)}
+.st-ok{background:var(--good);color:#1B2410}
+.st-ko{background:#C9705A;color:#fff}
+.prog{position:relative;height:14px;border-radius:100px;background:var(--bg1);border:1px solid var(--line)}
+.prog .fill{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent2));max-width:100%}
+.prog .mark{position:absolute;top:-5px;width:3px;height:22px;border-radius:2px;background:var(--ink);opacity:.75}
+.prog-legend{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:7px}
+.callout{border:1px solid var(--line);background:var(--card2);border-radius:12px;padding:12px 14px;font-size:13px;margin:10px 0}
+.callout.warn{border-color:#C9A24E}
+.callout.good{border-color:var(--good)}
+.callout.bad{border-color:#C9705A}
+.qty{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.qty input{width:110px;text-align:center}
+.chip{border:1px solid var(--line);background:var(--card2);color:var(--ink);padding:6px 12px;border-radius:100px;font-size:12.5px}
+.chip:hover{border-color:var(--accent)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.costbox{font-size:13.5px;margin:6px 0 12px}
+.costbox small{color:var(--muted)}
+.sect{margin-top:22px;padding-top:6px;border-top:1px dashed var(--line)}
+.sect:first-child{margin-top:0;border-top:none}
+.frm{display:flex;flex-direction:column;gap:12px;max-width:520px}
+.frm .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.frm .two{grid-template-columns:1fr}}
+.recap{font-size:13.5px;line-height:1.55}
+details.how{margin-top:12px;font-size:13px;color:var(--muted)}
+details.how summary{cursor:pointer;color:var(--accent);font-weight:600}
+details.how ol{margin:8px 0 0 18px;padding:0}
+select{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--ink);font-size:14px}
 </style>
 </head>
 <body>
@@ -143,6 +180,7 @@ th{color:var(--muted);font-weight:600;font-size:12px}
     <button class="tab" data-panel="admin">➕ Immatriculer un titre</button>
     <button class="tab" data-panel="transfer">🔁 Ventes &amp; transferts</button>
     <button class="tab" data-panel="secur">🪙 Titriser</button>
+    <button class="tab" data-panel="offres">💰 Offres</button>
     <button class="tab" data-panel="dash">📊 Tableau de bord</button>
   </div>
 
@@ -191,6 +229,89 @@ th{color:var(--muted);font-weight:600;font-size:12px}
       </div>
       <div id="trMsg"></div>
       <div id="trBody"></div>
+    </div>
+  </div>
+  <div class="panel" id="offres">
+    <div class="setup card" style="margin-bottom:18px">
+      <span>Adresse du contrat LandPartsSaleFactory :</span>
+      <input id="saleFactoryInput" placeholder="0x...">
+      <button class="btn small" id="saveSaleFactoryBtn">Enregistrer</button>
+      <span id="saveSaleFactoryMsg" style="color:var(--good);font-weight:600;display:none">✓ Adresse enregistrée</span>
+    </div>
+
+    <div id="offListView">
+      <div class="card" style="margin-bottom:18px">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+          <div>
+            <h3>Offres de parts</h3>
+            <p class="note" style="margin:4px 0 0">Financez-vous en vendant des parts d'une parcelle titrisée. Les investisseurs paient en ETH.</p>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn small" id="btnOffRefresh">Actualiser</button>
+            <button class="btn primary small" id="btnOffNew">+ Créer une offre</button>
+          </div>
+        </div>
+        <details class="how"><summary>Comment ça marche ?</summary>
+          <ol>
+            <li><b>Le bénéficiaire</b> (qui a titrisé la parcelle) crée l'offre : il fixe le prix d'une part, l'objectif minimal et la durée, puis dépose ses parts.</li>
+            <li><b>Le conservateur</b> autorise chaque investisseur (vérification d'identité, KYC).</li>
+            <li><b>Les investisseurs</b> achètent des parts en ETH. L'argent et les parts restent bloqués dans le contrat jusqu'à la fin.</li>
+            <li><b>À la fin :</b> si l'objectif minimal est atteint, les investisseurs réclament leurs parts et le vendeur retire les fonds. Sinon, chacun est remboursé intégralement.</li>
+          </ol>
+        </details>
+        <div id="offListMsg"></div>
+        <div class="offres-grid" id="offList"></div>
+      </div>
+
+      <div class="card" id="offCreateCard" style="display:none;margin-bottom:18px">
+        <h3 style="margin-bottom:6px">Créer une offre</h3>
+        <p class="note">Étape 1 : choisissez la parcelle titrisée dont vous détenez les parts. Vous devez être connecté avec le compte bénéficiaire.</p>
+        <div style="display:flex;gap:10px;max-width:420px">
+          <input id="offTokenId" type="number" min="0" placeholder="tokenId de la parcelle (ex : 2)" style="flex:1">
+          <button class="btn primary" id="btnOffLookup" style="white-space:nowrap">Charger</button>
+        </div>
+        <div id="offLookupMsg"></div>
+        <div id="offCreateForm" style="display:none;margin-top:16px">
+          <div id="offLookupInfo" class="callout good"></div>
+          <div class="frm">
+            <div>
+              <label>Nombre de parts mises en vente</label>
+              <input id="offN" type="number" min="1" step="1">
+              <div class="chips" id="offNChips"></div>
+            </div>
+            <div class="two">
+              <div><label>Prix d'une part (en ETH)</label><input id="offPrix" value="0.0001" inputmode="decimal"></div>
+              <div><label>Objectif minimal (% de l'offre)</label><input id="offPct" type="number" min="1" max="100" value="30"></div>
+            </div>
+            <div>
+              <label>Durée de l'offre</label>
+              <select id="offDuree">
+                <option value="10">10 minutes (démonstration)</option>
+                <option value="60">1 heure</option>
+                <option value="1440">1 jour</option>
+                <option value="10080">7 jours</option>
+                <option value="43200">30 jours</option>
+              </select>
+            </div>
+            <div class="callout recap" id="offRecap"></div>
+            <div><button class="btn primary" id="offCreateBtn">Lancer l'offre (2 transactions)</button></div>
+          </div>
+          <div id="offCreateMsg1"></div>
+          <div id="offCreateMsg2"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="offDetailView" style="display:none">
+      <button class="link-btn" id="offBack" style="margin:0 0 12px">← Toutes les offres</button>
+      <div class="card" id="offHead" style="margin-bottom:18px"></div>
+      <div id="offMsg"></div>
+      <div class="card" id="offActions" style="margin-bottom:18px"></div>
+      <div class="card">
+        <h3>Journal des opérations</h3>
+        <p class="note">Chaque ligne renvoie à la transaction sur Etherscan : c'est la preuve publique de l'opération. La liste se met à jour automatiquement quelques secondes après la confirmation.</p>
+        <div class="tablewrap" id="offJournal"></div>
+      </div>
     </div>
   </div>
   <div class="panel" id="dash">
@@ -342,6 +463,8 @@ const FACTORY_ABI = [
 ];
 let secContract, secAddr = '', factoryContract, factoryAddr = localStorage.getItem('lfr_factory_addr') || '';
 $('factoryInput').value = factoryAddr;
+let saleFactoryContract, saleFactoryAddr = localStorage.getItem('lfr_salefactory_addr') || '';
+$('saleFactoryInput').value = saleFactoryAddr;
 
 // Si l'application est servie par le serveur, il fournit les adresses des contrats : plus rien à copier-coller.
 (async () => {
@@ -355,6 +478,10 @@ $('factoryInput').value = factoryAddr;
     if(serverCfg.factory && !same(serverCfg.factory, factoryAddr)){
       factoryAddr = serverCfg.factory; $('factoryInput').value = factoryAddr;
       try{ localStorage.setItem('lfr_factory_addr', factoryAddr) }catch(e){}
+    }
+    if(serverCfg.saleFactory && !same(serverCfg.saleFactory, saleFactoryAddr)){
+      saleFactoryAddr = serverCfg.saleFactory; $('saleFactoryInput').value = saleFactoryAddr;
+      try{ localStorage.setItem('lfr_salefactory_addr', saleFactoryAddr) }catch(e){}
     }
     connectContract();
   }catch(e){ /* pas de serveur : l'interface reste utilisable avec un portefeuille */ }
@@ -375,6 +502,7 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
   t.classList.add('active'); $(t.dataset.panel).classList.add('active');
   if(t.dataset.panel === 'dash') loadDashboard();
+  if(t.dataset.panel === 'offres') loadOffresList();
 });
 
 $('saveAddrBtn').onclick = () => {
@@ -384,30 +512,60 @@ $('saveAddrBtn').onclick = () => {
   updateRole();
   const m = $('saveMsg'); m.style.display = 'inline';
   clearTimeout(window._saveMsgTimer);
-  window._saveMsgTimer = setTimeout(()=> m.style.display='none', 3000);
+  window._saveMsgTimer = setTimeout(()=> m.style.display='none', 9000);
 };
 
 function short(a){ return a ? a.slice(0,6)+'...'+a.slice(-4) : ''; }
 const eq = (a,b) => a && b && a.toLowerCase() === b.toLowerCase();
 const ZERO = '0x0000000000000000000000000000000000000000';
 
+// Cherche le vrai message du contrat (« require ») caché dans les erreurs imbriquées du portefeuille.
+function revertReason(err){
+  const seen = new Set(), texts = [];
+  (function walk(o, d){
+    if(!o || d > 4) return;
+    if(typeof o === 'string'){ texts.push(o); return; }
+    if(typeof o !== 'object' || seen.has(o)) return;
+    seen.add(o);
+    for(const k of ['reason','message','error','data','body']) if(k in o) walk(o[k], d + 1);
+  })(err, 0);
+  for(const t of texts){
+    const m = t.match(/execution reverted:? ?(?:with reason string )?'?([^'"\n]{3,200})/i) || t.match(/reverted with reason string '([^']+)'/i);
+    if(m) return m[1].trim();
+  }
+  return null;
+}
+const FRIENDLY = [
+  [/Investisseur non autorise/i, "Votre adresse n'est pas autorisée : demandez au conservateur de la valider (KYC)."],
+  [/Montant ETH incorrect/i, "Le montant en ETH doit être exactement : nombre de parts × prix d'une part."],
+  [/Offre terminee/i, "L'offre est terminée : les achats ne sont plus possibles."],
+  [/Offre en cours/i, "L'offre n'est pas encore terminée : patientez jusqu'à sa date de fin."],
+  [/Pas assez de parts disponibles/i, "Il ne reste pas assez de parts disponibles dans cette offre."],
+  [/Reserve au conservateur/i, "Réservé au conservateur : changez de compte dans votre portefeuille."],
+  [/Reserve au vendeur/i, "Réservé au vendeur de l'offre : changez de compte dans votre portefeuille."],
+  [/Objectif minimal non atteint/i, "Objectif minimal non atteint : le vendeur ne peut pas retirer les fonds."],
+  [/Contrat de parts non reconnu/i, "Ce contrat de parts n'a pas été créé par la Factory de titrisation liée à cette offre."],
+  [/Seul le beneficiaire/i, "Seul le bénéficiaire de la titrisation peut créer l'offre : changez de compte."]
+];
 function errMsg(err){
   if(err.code === 4001 || err.code === 'ACTION_REJECTED') return 'Transaction refusée dans le portefeuille.';
-  let r = (err.reason || (err.error && err.error.message) || err.message || 'Échec').replace('execution reverted: ','');
+  let r = (revertReason(err) || err.reason || (err.error && err.error.message) || err.message || 'Échec').replace('execution reverted: ','');
   if(/missing role/.test(r)) return "Ce compte n'est pas conservateur. Changez de compte dans votre portefeuille.";
+  for(const [re, msg] of FRIENDLY) if(re.test(r)) return msg;
   if(/proprietaire/i.test(r)) r += ' — changez de compte dans votre portefeuille si besoin.';
   return r.slice(0,220);
 }
 
-async function runTx(msgEl, label, send, after){
-  msgEl.innerHTML = `<div class="msg ok">${label}… confirmez dans votre portefeuille puis patientez.</div>`;
+async function runTx(msgEl, label, send, after, okText){
+  msgEl.innerHTML = `<div class="msg ok">⏳ ${label}… confirmez dans votre portefeuille puis patientez.</div>`;
   try{
     const tx = await send();
-    msgEl.innerHTML = '<div class="msg ok">Transaction envoyée, en attente de confirmation…</div>';
-    await tx.wait();
-    msgEl.innerHTML = '<div class="msg ok">Terminé ✅</div>';
-    if(after) await after();
-    return true;
+    const lien = txLink(tx.hash);
+    msgEl.innerHTML = `<div class="msg ok">🚀 Transaction envoyée. ${lien}<br><small>En attente de confirmation par le réseau…</small></div>`;
+    const rc = await tx.wait();
+    msgEl.innerHTML = `<div class="msg ok">${okText || 'Terminé'} ✅ ${rc && rc.blockNumber ? '(bloc ' + nf(rc.blockNumber) + ') ' : ''}${lien}</div>`;
+    if(after) await after(rc);
+    return rc || true;
   }catch(err){ msgEl.innerHTML = `<div class="msg err">${errMsg(err)}</div>`; return false; }
 }
 
@@ -424,6 +582,7 @@ async function refreshAll(){
   await updateRole();
   if(trCurrent !== null) await loadTransfer();
   if(secAddr && currentTokenLookup !== null) await refreshSecStatus();
+  if(typeof offreCur !== 'undefined' && offreCur) await loadOffre(offreCur, { silent: true });
 }
 
 async function connectWallet(){
@@ -464,6 +623,7 @@ function connectContract(){
   if(signer && registryAddr){ registry = new ethers.Contract(registryAddr, ABI, signer); }
   if(signer && factoryAddr){ factoryContract = new ethers.Contract(factoryAddr, FACTORY_ABI, signer); }
   if(signer && secAddr){ secContract = new ethers.Contract(secAddr, SEC_ABI, signer); }
+  if(signer && saleFactoryAddr){ saleFactoryContract = new ethers.Contract(saleFactoryAddr, SALE_FACTORY_ABI, signer); }
 }
 
 $('saveFactoryBtn').onclick = () => {
@@ -472,7 +632,7 @@ $('saveFactoryBtn').onclick = () => {
   connectContract();
   const m = $('saveFactoryMsg'); m.style.display = 'inline';
   clearTimeout(window._saveFactoryMsgTimer);
-  window._saveFactoryMsgTimer = setTimeout(()=> m.style.display='none', 3000);
+  window._saveFactoryMsgTimer = setTimeout(()=> m.style.display='none', 9000);
 };
 
 let currentTokenLookup = null;
@@ -750,7 +910,8 @@ async function selectParcel(id, el){
 
 // --- Tableau de bord (KPIs + registre + carnet d'adresses) : alimenté par l'API ---
 const TYPE_LABEL = { IMMATRICULATION:'Immatriculation', PROPOSITION:'Vente proposée', TRANSFERT:'Transfert validé',
-  ANNULATION:'Proposition annulée', TITRISATION_CREEE:'Titrisation créée', PARTS_EMISES:'Parts émises', RACHAT:'Rachat demandé' };
+  ANNULATION:'Proposition annulée', TITRISATION_CREEE:'Titrisation créée', PARTS_EMISES:'Parts émises', RACHAT:'Rachat demandé',
+  OFFRE_CREEE:'Offre créée', ACHAT_PARTS:'Achat de parts', REMBOURSEMENT:'Remboursement', FONDS_RETIRES:'Fonds retirés' };
 const who = (addr, nom) => nom ? esc(nom) : (addr ? short(addr) : '—');
 
 function renderKpis(k){
@@ -760,6 +921,12 @@ function renderKpis(k){
     ['Ventes en attente', nf(k.propositionsEnAttente), 'à valider par le conservateur'],
     ['Titrisations', nf(k.titrisations), nf(k.titrisationsActives) + ' active(s)'], ['Parts émises', nf(k.partsEmises), 'en circulation']
   ];
+  if(k.offres){
+    const o = k.offres;
+    cards.push(['Offres de parts', nf(o.total), nf(o.enCours) + ' en cours · ' + nf(o.reussies) + ' réussie(s) · ' + nf(o.echouees) + ' échouée(s)'],
+      ['ETH levés', ethFr(o.ethLeves) + ' ETH', nf(o.investisseurs) + ' investisseur(s)' + (o.ethEnCours !== '0' ? ' · ' + ethFr(o.ethEnCours) + ' ETH en cours' : '')],
+      ['Parts vendues', nf(o.partsVendues), 'toutes offres confondues']);
+  }
   $('kpiGrid').innerHTML = cards.map(c => `<div class="kpi"><span>${c[0]}</span><b>${c[1]}</b><small>${c[2]}</small></div>`).join('');
 }
 
@@ -774,7 +941,7 @@ function renderCharts(k){
     <div title="${j.jour} : ${j.nb}"><span>${j.nb}</span><i style="height:${Math.round(j.nb / maxJ * 100)}%"></i><span>${j.jour.slice(8)}/${j.jour.slice(5,7)}</span></div>`).join('')}</div>`
     : '<p class="note">Aucune donnée.</p>';
   $('dashActivity').innerHTML = k.activite.length ? k.activite.map(a => `
-    <div class="act"><div><b>${TYPE_LABEL[a.type] || esc(a.type)}</b>${a.token_id != null ? ' · parcelle #' + a.token_id : ''}
+    <div class="act"><div><b>${TYPE_LABEL[a.type] || esc(a.type)}</b>${a.token_id != null ? ' · parcelle #' + a.token_id : ''}${a.type === 'ACHAT_PARTS' ? ' · ' + nf(a.valeur) + ' part(s)' : ''}
       <small>${a.de || a.de_nom ? who(a.de, a.de_nom) + ' → ' : ''}${who(a.vers, a.vers_nom)} · ${new Date(a.ts * 1000).toLocaleString('fr-FR')}</small></div></div>`).join('')
     : '<p class="note">Aucune activité indexée pour le moment.</p>';
 }
@@ -807,7 +974,7 @@ async function loadDashboard(){
     await Promise.all([loadTable(), loadContacts()]);
   }catch(e){
     ['kpiGrid','chartVille','chartJour','dashTable','dashActivity','contactList'].forEach(id => $(id).innerHTML = '');
-    err.innerHTML = `<div class="msg err">Le serveur de données n'est pas joignable. Lancez l'application avec « npm start » (voir le README), puis ouvrez http://localhost:3000.</div>`;
+    err.innerHTML = `<div class="msg err">Le serveur de données n'est pas joignable. Lancez l'application avec « npm start » (voir le README), puis ouvrez http://localhost:9000.</div>`;
   }
 }
 $('btnDashRefresh').onclick = loadDashboard;
@@ -854,6 +1021,539 @@ $('regForm').onsubmit = async (e) => {
     msg.innerHTML = `<div class="msg err">${errMsg(err)}</div>`;
   }
 };
+// ====================================================================
+// OFFRES PUBLIQUES DE PARTS (ICO / STO)
+// Le portefeuille signe les transactions ; la base (API) fournit la liste et le journal ;
+// quand un portefeuille est connecté, l'état de l'offre est relu directement sur la blockchain (toujours exact).
+// ====================================================================
+const SALE_FACTORY_ABI = [
+ "function creerOffre(address parts, uint256 prixParPartWei, uint256 objectifMinimalWei, uint256 dureeMinutes) returns (address)",
+ "function nombreDOffres() view returns (uint256)",
+ "function toutesLesOffres(uint256) view returns (address)",
+ "event NouvelleOffre(address indexed offre, address indexed parts, address indexed vendeur, uint256 prixParPart, uint256 objectifMinimal, uint256 finOffre)"
+];
+const SALE_ABI = [
+ "function parts() view returns (address)",
+ "function vendeur() view returns (address)",
+ "function prixParPart() view returns (uint256)",
+ "function objectifMinimalWei() view returns (uint256)",
+ "function finOffre() view returns (uint256)",
+ "function totalCollecte() view returns (uint256)",
+ "function totalPartsReservees() view returns (uint256)",
+ "function fondsRetires() view returns (bool)",
+ "function partsDisponibles() view returns (uint256)",
+ "function autorise(address) view returns (bool)",
+ "function partsReservees(address) view returns (uint256)",
+ "function ethDepense(address) view returns (uint256)",
+ "function estConservateur(address) view returns (bool)",
+ "function autoriser(address investisseur, bool statut)",
+ "function acheter(uint256 nbParts) payable",
+ "function reclamerParts()",
+ "function rembourser()",
+ "function retirerFonds()",
+ "function recupererPartsInvendues()"
+];
+const BN = ethers.BigNumber;
+const ST = { EN_COURS:['En cours','st-run'], REUSSIE:['Réussie','st-ok'], ECHOUEE:['Échouée','st-ko'] };
+const stBadge = s => `<span class="st ${ST[s][1]}">${ST[s][0]}</span>`;
+const OP_LABEL = {
+  DEPOT:"Parts déposées dans l'offre", AUTORISATION:'Investisseur autorisé', RETRAIT_AUTORISATION:'Autorisation retirée',
+  ACHAT:'Achat de parts', RECLAMATION:'Parts réclamées', REMBOURSEMENT:'Remboursement',
+  FONDS_RETIRES:'Fonds retirés par le vendeur', RECUPERATION:'Parts invendues récupérées', CREATION:'Offre créée'
+};
+const dt = ts => new Date(ts * 1000).toLocaleString('fr-FR');
+const num = x => Number(x.toString());
+const errBox = t => `<div class="msg err">${t}</div>`;
+
+// ---------- formats ----------
+const groupe = i => String(i).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+function ethFr(s, max = 6){          // "0.0035" -> "0,0035"
+  const txt = String(s);
+  let [i, f = ''] = txt.split('.');
+  f = f.slice(0, max).replace(/0+$/, '');
+  if(!f && i === '0' && /[1-9]/.test(txt)) return '< 0,000001';
+  return groupe(i) + (f ? ',' + f : '');
+}
+const fmtWei = w => ethFr(ethers.utils.formatEther(w));
+function fmtDuree(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const j = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  if(j) return `${j} j ${h} h`;
+  if(h) return `${h} h ${m} min`;
+  if(m) return `${m} min ${String(s).padStart(2, '0')} s`;
+  return `${s} s`;
+}
+// Position (en %) de la barre de progression et du repère « objectif minimal ».
+function barPct(coll, obj, max){
+  const denom = max.gt(obj) ? max : obj;
+  if(denom.isZero()) return { w: 0, m: 0 };
+  const pct = x => Math.min(100, x.mul(1000).div(denom).toNumber() / 10);
+  return { w: pct(coll), m: pct(obj) };
+}
+function progBar(coll, obj, max){
+  const { w, m } = barPct(coll, obj, max);
+  return `<div class="prog"><i class="fill" style="width:${w}%"></i><b class="mark" style="left:calc(${m}% - 1px)" title="Objectif minimal"></b></div>`;
+}
+
+// ---------- liens de vérification (Etherscan) ----------
+function txLink(h, label){
+  const b = explorerBase();
+  return b ? `<a href="${b}/tx/${h}" target="_blank" rel="noopener">${label || 'Vérifier la transaction sur Etherscan ↗'}</a>` : `<code>${short(h)}</code>`;
+}
+function addrLink(a, label){
+  if(!a) return '—';
+  const b = explorerBase();
+  return b ? `<a href="${b}/address/${a}" target="_blank" rel="noopener">${label || short(a)}</a>` : (label || short(a));
+}
+async function copyText(t){
+  try{ await navigator.clipboard.writeText(t); return true; }
+  catch(e){ const i = document.createElement('input'); i.value = t; document.body.appendChild(i); i.select(); try{ document.execCommand('copy'); }catch(_){} i.remove(); return false; }
+}
+
+// ---------- configuration ----------
+$('saveSaleFactoryBtn').onclick = () => {
+  saleFactoryAddr = $('saleFactoryInput').value.trim();
+  try{ localStorage.setItem('lfr_salefactory_addr', saleFactoryAddr) }catch(e){}
+  connectContract();
+  const m = $('saveSaleFactoryMsg'); m.style.display = 'inline';
+  clearTimeout(window._saveSaleFactoryTimer);
+  window._saveSaleFactoryTimer = setTimeout(() => m.style.display = 'none', 9000);
+  loadOffresList();
+};
+
+// ---------- liste des offres ----------
+function offreCard(r){
+  const coll = BN.from(r.collecte_wei || 0), obj = BN.from(r.objectif_wei || 0), max = BN.from(r.max_wei || 0);
+  const fin = r.statut === 'EN_COURS'
+    ? `<b data-fin="${r.fin_ts}">${fmtDuree(r.temps_restant)}</b>`
+    : `<b>${dt(r.fin_ts)}</b>`;
+  return `<div class="offre" data-offre="${esc(r.contrat)}">
+    <div class="offre-head"><b>Parcelle #${r.token_id ?? '?'}</b>${stBadge(r.statut)}</div>
+    <span class="muted">${esc(r.numero_tf || '')}${r.localisation ? ' · ' + esc(r.localisation) : ''}</span>
+    ${progBar(coll, obj, max)}
+    <div class="prog-legend"><span>${ethFr(r.collecte_eth)} ETH levés</span><span>objectif min. ${ethFr(r.objectif_eth)} ETH</span></div>
+    <div class="mini"><span>Prix d'une part</span><b>${ethFr(r.prix_eth)} ETH</b></div>
+    <div class="mini"><span>Parts</span><b>${nf(r.parts_vendues)} vendues / ${nf(r.parts_deposees)} en vente</b></div>
+    <div class="mini"><span>${r.statut === 'EN_COURS' ? 'Temps restant' : 'Terminée le'}</span>${fin}</div>
+  </div>`;
+}
+async function loadOffresList(){
+  const msg = $('offListMsg'), box = $('offList');
+  msg.innerHTML = saleFactoryAddr ? '' : '<div class="callout warn">Enregistrez l\'adresse de la <b>LandPartsSaleFactory</b> ci-dessus pour pouvoir créer des offres.</div>';
+  try{
+    const rows = await api('/api/offres');
+    box.innerHTML = rows.length ? rows.map(offreCard).join('')
+      : '<p class="note" style="grid-column:1/-1">Aucune offre pour le moment. Cliquez sur « + Créer une offre » (réservé au bénéficiaire d\'une parcelle titrisée).</p>';
+  }catch(e){
+    box.innerHTML = '';
+    msg.innerHTML += errBox("Le serveur de données n'est pas joignable : la liste des offres est indisponible.");
+  }
+}
+$('btnOffRefresh').onclick = loadOffresList;
+$('offList').onclick = (e) => { const c = e.target.closest('[data-offre]'); if(c) openOffre(c.dataset.offre); };
+
+// ---------- création d'une offre ----------
+let offCreateSt = null;
+$('btnOffNew').onclick = () => {
+  const c = $('offCreateCard');
+  c.style.display = c.style.display === 'none' ? 'block' : 'none';
+  if(c.style.display === 'block') c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+$('btnOffLookup').onclick = async () => {
+  const m = $('offLookupMsg'); m.innerHTML = '';
+  $('offCreateForm').style.display = 'none'; offCreateSt = null;
+  $('offCreateMsg1').innerHTML = ''; $('offCreateMsg2').innerHTML = '';
+  if(!signer){ m.innerHTML = errBox('Connectez d\'abord votre portefeuille.'); return; }
+  if(!factoryContract){ m.innerHTML = errBox('Enregistrez l\'adresse de la Factory de titrisation (onglet Titriser).'); return; }
+  if(!saleFactoryContract){ m.innerHTML = errBox('Enregistrez l\'adresse de la LandPartsSaleFactory ci-dessus.'); return; }
+  const t = $('offTokenId').value.trim();
+  if(t === ''){ m.innerHTML = errBox('Entrez le tokenId de la parcelle.'); return; }
+  try{
+    const secA = await factoryContract.contratTitrisationDe(t);
+    if(secA === ethers.constants.AddressZero){ m.innerHTML = errBox('Cette parcelle n\'a pas de titrisation : passez d\'abord par l\'onglet « Titriser ».'); return; }
+    const token = new ethers.Contract(secA, SEC_ABI, signer);
+    const me = await signer.getAddress();
+    const [titrise, benef, bal, prevues] = await Promise.all([token.estTitrise(), token.beneficiaireInitial(), token.balanceOf(me), token.totalPartsPrevues()]);
+    if(!titrise){ m.innerHTML = errBox('Les parts ne sont pas encore émises : terminez le parcours dans l\'onglet « Titriser ».'); return; }
+    if(!eq(benef, me)){ m.innerHTML = errBox(`Seul le bénéficiaire de la titrisation (${short(benef)}) peut créer l'offre. Changez de compte dans votre portefeuille.`); return; }
+    if(bal.isZero()){ m.innerHTML = errBox('Vous ne détenez aucune part de cette parcelle.'); return; }
+    offCreateSt = { secA, token, bal, tokenId: t };
+    $('offLookupInfo').innerHTML = `Parcelle <b>#${esc(t)}</b> · contrat de parts ${addrLink(secA)} · vous détenez <b>${nf(num(bal))}</b> part(s) sur ${nf(num(prevues))}.`;
+    $('offN').value = String(Math.max(1, Math.floor(num(bal) * 0.6)));
+    $('offNChips').innerHTML = [25, 50, 75, 100].map(p => `<button type="button" class="chip" data-p="${p}">${p} %</button>`).join('');
+    $('offCreateForm').style.display = 'block';
+    offRecap();
+  }catch(e){ m.innerHTML = errBox('Impossible de lire cette titrisation : vérifiez les adresses et le réseau (Sepolia).'); }
+};
+$('offNChips').onclick = (e) => {
+  const b = e.target.closest('[data-p]'); if(!b || !offCreateSt) return;
+  $('offN').value = String(Math.max(1, Math.floor(num(offCreateSt.bal) * Number(b.dataset.p) / 100)));
+  offRecap();
+};
+['offN', 'offPrix', 'offPct', 'offDuree'].forEach(id => $(id).addEventListener('input', offRecap));
+
+// Vérifie le formulaire, affiche le récapitulatif en clair et renvoie les valeurs à envoyer à la blockchain.
+function offRecap(){
+  const box = $('offRecap'), st = offCreateSt;
+  if(!st) return { ok: false };
+  const nTxt = $('offN').value.trim(), n = /^\d+$/.test(nTxt) ? parseInt(nTxt, 10) : 0;
+  let prix = null;
+  try{ prix = ethers.utils.parseEther(($('offPrix').value || '').trim().replace(',', '.')); }catch(e){}
+  const pct = parseInt($('offPct').value, 10), minutes = parseInt($('offDuree').value, 10);
+  let pb = null;
+  if(!n) pb = 'Indiquez le nombre de parts à mettre en vente.';
+  else if(BN.from(n).gt(st.bal)) pb = `Vous ne détenez que ${st.bal.toString()} part(s).`;
+  else if(!prix || prix.lte(0)) pb = 'Indiquez un prix valide, par exemple 0.0001.';
+  else if(!(pct >= 1 && pct <= 100)) pb = 'L\'objectif minimal doit être compris entre 1 et 100 %.';
+  $('offCreateBtn').disabled = !!pb;
+  if(pb){ box.innerHTML = '⚠️ ' + pb; return { ok: false }; }
+  const objParts = Math.ceil(n * pct / 100), objWei = prix.mul(objParts), total = prix.mul(n);
+  const fin = new Date(Date.now() + minutes * 60000);
+  box.innerHTML = `Vous mettez <b>${nf(n)} part(s)</b> en vente, à <b>${fmtWei(prix)} ETH</b> l'une.<br>
+    • Si tout est vendu : <b>${fmtWei(total)} ETH</b>.<br>
+    • Objectif minimal : <b>${fmtWei(objWei)} ETH</b> (au moins ${nf(objParts)} part(s) vendue(s)).<br>
+    • Fin de l'offre : ${fin.toLocaleString('fr-FR')}. Si l'objectif n'est pas atteint, tous les investisseurs sont remboursés.`;
+  return { ok: true, n, prix, objWei, minutes };
+}
+
+$('offCreateBtn').onclick = async () => {
+  const r = offRecap(), st = offCreateSt;
+  if(!r.ok || !st) return;
+  const m1 = $('offCreateMsg1'), m2 = $('offCreateMsg2');
+  m1.innerHTML = ''; m2.innerHTML = '';
+  $('offCreateBtn').disabled = true;
+  // Transaction 1 : création de l'offre par la Factory
+  const rc = await runTx(m1, 'Création de l\'offre (1/2)', () => saleFactoryContract.creerOffre(st.secA, r.prix, r.objWei, r.minutes), null, 'Offre créée');
+  if(!rc){ $('offCreateBtn').disabled = false; return; }
+  let addr = null;
+  for(const log of (rc.logs || [])){
+    try{ const p = saleFactoryContract.interface.parseLog(log); if(p.name === 'NouvelleOffre'){ addr = p.args.offre; break; } }catch(e){}
+  }
+  // Secours 1 : lire l'adresse dans le journal brut (le 1er paramètre indexé de l'événement est le topic n°1)
+  if(!addr){
+    const l = (rc.logs || []).find(x => x.address && eq(x.address, saleFactoryAddr) && x.topics && x.topics.length === 4);
+    if(l){ try{ addr = ethers.utils.getAddress('0x' + l.topics[1].slice(26)); }catch(e){} }
+  }
+  // Secours 2 : la Factory garde la liste de ses offres, la dernière est celle qui vient d'être créée
+  if(!addr){
+    try{ const n = await saleFactoryContract.nombreDOffres(); if(!n.isZero()) addr = await saleFactoryContract.toutesLesOffres(n.sub(1)); }catch(e){}
+  }
+  if(!addr){
+    console.warn('Offre créée mais adresse introuvable. Journaux reçus :', rc.logs);
+    m1.innerHTML += errBox('Offre créée, mais son adresse est introuvable. Ouvrez la transaction ci-dessus sur Etherscan, onglet « Logs » : l\'adresse de l\'offre est le champ « offre ».');
+    $('offCreateBtn').disabled = false; return;
+  }
+  // Transaction 2 : dépôt des parts dans l'offre
+  const ok = await runTx(m2, `Dépôt de ${nf(r.n)} part(s) dans l'offre (2/2)`, () => st.token.transfer(addr, r.n), null, `${nf(r.n)} part(s) déposée(s)`);
+  await openOffre(addr);
+  $('offMsg').innerHTML = ok
+    ? `<div class="msg ok">✅ Offre lancée : ${nf(r.n)} part(s) en vente. ${txLink(rc.transactionHash, 'Création ↗')} · ${txLink(ok.transactionHash || '', 'Dépôt ↗')}</div>`
+    : errBox('L\'offre est créée mais vide : utilisez « Déposer des parts » dans l\'espace vendeur ci-dessous.');
+  $('offCreateCard').style.display = 'none';
+  $('offCreateBtn').disabled = false;
+  scheduleJournal(addr);
+};
+
+// ---------- détail d'une offre ----------
+let offreCur = null, offreView = null, journalTimers = [];
+const remaining = v => Math.max(0, v.fin - (v.nowAtFetch + (Date.now() - v.fetchedAt) / 1000));
+const statutV = v => remaining(v) > 0 ? 'EN_COURS' : (v.collecte.gte(v.objectif) ? 'REUSSIE' : 'ECHOUEE');
+
+async function fetchOffre(addr){
+  let db = null, contacts = [];
+  try{ db = await api('/api/offres/' + addr); }catch(e){ /* pas encore indexée, ou serveur absent */ }
+  try{ contacts = await api('/api/contacts'); }catch(e){}
+  let live = null;
+  if(signer && provider){
+    try{
+      const me = await signer.getAddress();
+      const c = new ethers.Contract(addr, SALE_ABI, signer);
+      const [partsAddr, vendeur, prix, objectif, fin, collecte, reservees, retires, dispo, autorise, mesParts, monEth, estCons, blk, solde] = await Promise.all([
+        c.parts(), c.vendeur(), c.prixParPart(), c.objectifMinimalWei(), c.finOffre(), c.totalCollecte(), c.totalPartsReservees(),
+        c.fondsRetires(), c.partsDisponibles(), c.autorise(me), c.partsReservees(me), c.ethDepense(me), c.estConservateur(me),
+        provider.getBlock('latest'), provider.getBalance(me)
+      ]);
+      const tok = new ethers.Contract(partsAddr, SEC_ABI, signer);
+      const [stock, partsToken, tokenId] = await Promise.all([tok.balanceOf(addr), tok.balanceOf(me), tok.parcelTokenId()]);
+      live = { me, partsAddr, vendeur, prix, objectif, fin: num(fin), collecte, reservees, retires, dispo, autorise, mesParts, monEth, estCons, blk, solde, stock, partsToken, tokenId };
+    }catch(e){ live = null; }
+  }
+  if(!live && !db) return null;
+  let v;
+  if(live){
+    const ouvert = live.blk.timestamp < live.fin;
+    v = {
+      addr, live: true, tokenId: db ? db.token_id : num(live.tokenId), partsAddr: live.partsAddr, vendeur: live.vendeur,
+      prix: live.prix, objectif: live.objectif, fin: live.fin, collecte: live.collecte,
+      // Tant que l'offre est ouverte, rien ne sort du contrat : parts vendues = parts réservées, parts en vente = stock.
+      vendues: ouvert ? num(live.reservees) : (db ? db.parts_vendues : num(live.reservees)),
+      enVente: ouvert ? num(live.dispo) + num(live.reservees) : (db ? db.parts_deposees : num(live.stock)),
+      dispo: num(live.dispo), fondsRetires: live.retires, stock: live.stock, reservees: live.reservees,
+      nowAtFetch: live.blk.timestamp, fetchedAt: Date.now(),
+      me: { addr: live.me, autorise: live.autorise, mesParts: live.mesParts, monEth: live.monEth, estCons: live.estCons,
+            isVendeur: eq(live.vendeur, live.me), solde: live.solde, partsToken: live.partsToken }
+    };
+  }else{
+    v = {
+      addr, live: false, tokenId: db.token_id, partsAddr: db.parts_contrat, vendeur: db.vendeur,
+      prix: BN.from(db.prix_wei), objectif: BN.from(db.objectif_wei), fin: db.fin_ts, collecte: BN.from(db.collecte_wei || 0),
+      vendues: db.parts_vendues, enVente: db.parts_deposees, dispo: db.parts_disponibles, fondsRetires: !!db.fonds_retires,
+      nowAtFetch: db.fin_ts - db.temps_restant, fetchedAt: Date.now(), me: null
+    };
+  }
+  v.db = db; v.ops = db ? db.operations : []; v.contacts = contacts;
+  v.investisseurs = db ? db.investisseurs : null;
+  return v;
+}
+
+async function loadOffre(addr, { silent = false } = {}){
+  offreCur = addr;
+  if(!silent){
+    $('offHead').innerHTML = '<p class="note">Chargement…</p>'; $('offActions').innerHTML = ''; $('offJournal').innerHTML = '';
+  }
+  const v = await fetchOffre(addr);
+  if(offreCur !== addr) return;
+  if(!v){ $('offHead').innerHTML = errBox('Offre introuvable : ni dans la base de données, ni sur la blockchain (vérifiez le réseau).'); offreView = null; return; }
+  offreView = v;
+  renderOffre(v);
+}
+async function openOffre(addr){
+  $('offListView').style.display = 'none'; $('offDetailView').style.display = 'block';
+  $('offMsg').innerHTML = '';
+  await loadOffre(addr);
+}
+$('offBack').onclick = () => {
+  offreCur = null; offreView = null;
+  $('offDetailView').style.display = 'none'; $('offListView').style.display = 'block';
+  loadOffresList();
+};
+
+function renderOffre(v){
+  const keep = ['offQty', 'offDepN', 'offKycAddr'].map(id => [id, $(id) && $(id).value]);
+  v._renduTermine = remaining(v) <= 0;
+  $('offHead').innerHTML = renderOffreHead(v);
+  $('offActions').innerHTML = renderOffreActions(v);
+  $('offJournal').innerHTML = renderJournal(v);
+  keep.forEach(([id, val]) => { if(val != null && $(id)) $(id).value = val; });
+  updateCost();
+}
+
+function renderOffreHead(v){
+  const s = statutV(v), ok = v.collecte.gte(v.objectif);
+  const max = v.prix.mul(v.enVente);
+  const d = v.db || {};
+  let sit;
+  if(s === 'EN_COURS') sit = ok
+    ? '✅ Objectif minimal atteint : l\'offre réussira à sa date de fin. Les achats restent possibles tant qu\'il reste des parts.'
+    : `Il manque <b>${fmtWei(v.objectif.sub(v.collecte))} ETH</b> pour atteindre l'objectif minimal. Sans cela, tous les investisseurs seront remboursés à la fin.`;
+  else if(s === 'REUSSIE') sit = '✅ Offre réussie : les investisseurs peuvent réclamer leurs parts et le vendeur peut retirer les fonds.';
+  else sit = '❌ Objectif minimal non atteint : chaque investisseur peut se faire rembourser intégralement.';
+  const vendeurNom = (v.contacts.find(c => eq(c.address, v.vendeur)) || {}).nom;
+  return `
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start">
+      <div>
+        <h3>Parcelle #${v.tokenId ?? '?'} ${stBadge(s)}</h3>
+        <p class="note" style="margin:6px 0 0">${d.numero_tf ? esc(d.numero_tf) + ' · ' : ''}${d.localisation ? esc(d.localisation) + ' · ' : ''}
+          Offre ${addrLink(v.addr)} · Vendeur ${addrLink(v.vendeur, vendeurNom ? esc(vendeurNom) : null)}</p>
+      </div>
+      <button class="btn small" id="btnOffReload">Actualiser</button>
+    </div>
+    <div style="margin-top:18px">
+      ${progBar(v.collecte, v.objectif, max)}
+      <div class="prog-legend"><span><b>${fmtWei(v.collecte)} ETH</b> levés</span><span>Objectif minimal : <b>${fmtWei(v.objectif)} ETH</b> ${ok ? '✓' : ''}</span></div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><span>Prix d'une part</span><b>${fmtWei(v.prix)} ETH</b><small>${groupe(v.prix.toString())} wei</small></div>
+      <div class="kpi"><span>Parts disponibles</span><b>${nf(v.dispo)}</b><small>${nf(v.vendues)} vendues · ${nf(v.enVente)} en vente</small></div>
+      <div class="kpi"><span>${s === 'EN_COURS' ? 'Temps restant' : 'Terminée le'}</span><b id="offCountdown" style="font-size:20px">${s === 'EN_COURS' ? fmtDuree(remaining(v)) : dt(v.fin)}</b><small>fin : ${dt(v.fin)}</small></div>
+      <div class="kpi"><span>Investisseurs</span><b>${v.investisseurs != null ? nf(v.investisseurs) : '—'}</b><small>comptes ayant acheté</small></div>
+    </div>
+    <p class="note" style="margin:14px 0 0">${sit}</p>
+    <div class="explorer-link secondary" style="text-align:left">${addrLink(v.addr, 'Vérifier les fonds en séquestre sur Etherscan ↗')}</div>`;
+}
+
+function renderOffreActions(v){
+  if(!v.live) return `<h3>Actions</h3>
+    <div class="callout">Connectez votre portefeuille (réseau Sepolia) pour acheter des parts ou gérer cette offre. Les chiffres ci-dessus viennent de la base de données.</div>
+    <button class="btn primary" data-act="connect">Connecter le portefeuille</button>`;
+  const me = v.me, s = statutV(v), ended = s !== 'EN_COURS', ok = v.collecte.gte(v.objectif);
+  const roles = [me.isVendeur && 'Vendeur', me.estCons && 'Conservateur', me.autorise && 'Investisseur autorisé'].filter(Boolean);
+  let sections = '';
+
+  // 1. Acheter (offre ouverte)
+  if(!ended){
+    sections += `<div class="sect"><h3>Acheter des parts</h3>`;
+    if(!me.autorise) sections += `<div class="callout warn">⚠️ Votre adresse n'est pas encore autorisée (KYC). Un conservateur doit la valider avant votre premier achat.
+      <button class="link-btn" data-act="copyMe">Copier mon adresse</button></div>`;
+    if(v.dispo === 0) sections += `<div class="callout">Aucune part disponible${v.enVente === 0 ? ' : le vendeur n\'a pas encore déposé ses parts.' : '.'}</div>`;
+    else sections += `
+      <div class="qty">
+        <button class="btn small" data-act="qtyMinus">−</button>
+        <input id="offQty" type="number" min="1" step="1" value="1" inputmode="numeric">
+        <button class="btn small" data-act="qtyPlus">+</button>
+        <button class="chip" data-act="qtySet" data-v="5">5</button>
+        <button class="chip" data-act="qtySet" data-v="10">10</button>
+        <button class="chip" data-act="qtyMax">Max (${nf(v.dispo)})</button>
+      </div>
+      <div class="costbox" id="offCostBox"></div>
+      <button class="btn primary" id="offBuyBtn" data-act="buy">Acheter</button>
+      <p class="note" style="margin-top:10px">Le montant est calculé pour vous : nombre de parts × prix. Vos parts sont réservées dans le contrat et vous seront remises à la fin si l'objectif est atteint ; sinon, vous êtes remboursé.</p>`;
+    sections += `</div>`;
+  }
+
+  // 2. Mes parts dans cette offre
+  if(me.mesParts.gt(0) || me.monEth.gt(0)){
+    sections += `<div class="sect"><h3>Mes parts dans cette offre</h3>`;
+    if(s === 'EN_COURS') sections += `<div class="callout">Vous avez réservé <b>${nf(num(me.mesParts))} part(s)</b> pour <b>${fmtWei(me.monEth)} ETH</b>. Elles vous seront remises à la fin de l'offre si l'objectif est atteint.</div>`;
+    else if(s === 'REUSSIE') sections += me.mesParts.gt(0)
+      ? `<div class="callout good">🎉 L'offre a réussi : vos <b>${nf(num(me.mesParts))} part(s)</b> sont prêtes.</div><button class="btn primary" data-act="claim">Réclamer mes ${nf(num(me.mesParts))} part(s)</button>`
+      : `<div class="callout good">Vos parts ont déjà été réclamées ✓ (vous les voyez dans votre portefeuille, sur le contrat de parts).</div>`;
+    else sections += me.monEth.gt(0)
+      ? `<div class="callout bad">L'objectif minimal n'a pas été atteint : vous pouvez récupérer vos <b>${fmtWei(me.monEth)} ETH</b>.</div><button class="btn primary" data-act="refund">Me faire rembourser ${fmtWei(me.monEth)} ETH</button>`
+      : '';
+    sections += `</div>`;
+  }
+
+  // 3. Espace vendeur
+  if(me.isVendeur){
+    const unsold = ok ? v.stock.sub(v.reservees) : v.stock;
+    sections += `<div class="sect"><h3>Espace vendeur</h3>`;
+    if(!ended) sections += `<div class="frm"><div><label>Déposer des parts dans l'offre (vous en détenez ${nf(num(me.partsToken))})</label>
+        <div style="display:flex;gap:8px"><input id="offDepN" type="number" min="1" step="1" placeholder="Nombre de parts" style="flex:1">
+        <button class="btn" data-act="deposit">Déposer</button></div></div></div>`;
+    if(v.fondsRetires) sections += `<div class="callout good">Fonds déjà retirés ✓</div>`;
+    else if(!ended) sections += `<p class="note">Le retrait des fonds sera possible à la fin de l'offre, si l'objectif minimal est atteint.</p>`;
+    else if(ok) sections += `<p><button class="btn primary" data-act="withdraw">Retirer les fonds (${fmtWei(v.collecte)} ETH)</button></p>`;
+    else sections += `<div class="callout bad">Objectif non atteint : pas de fonds à retirer, les investisseurs sont remboursés.</div>`;
+    if(ended) sections += unsold.gt(0)
+      ? `<p><button class="btn" data-act="recover">Récupérer ${nf(num(unsold))} part(s) invendue(s)</button></p>`
+      : `<p class="note">Aucune part invendue à récupérer.</p>`;
+    else sections += `<p class="note">Les parts invendues pourront être récupérées après la fin de l'offre.</p>`;
+    sections += `</div>`;
+  }
+
+  // 4. Espace conservateur (KYC)
+  if(me.estCons){
+    const etat = {};
+    [...v.ops].reverse().forEach(o => { if(o.type === 'AUTORISATION') etat[o.acteur] = true; if(o.type === 'RETRAIT_AUTORISATION') etat[o.acteur] = false; });
+    const autorises = Object.keys(etat).filter(a => etat[a]);
+    sections += `<div class="sect"><h3>Espace conservateur : autoriser les investisseurs (KYC)</h3>
+      <p class="note">En vrai système, vous vérifiez l'identité (CIN) hors blockchain avant d'autoriser l'adresse.</p>
+      <div class="frm">
+        <div><label>Adresse de l'investisseur</label><input id="offKycAddr" list="offContacts" placeholder="0x...">
+          <datalist id="offContacts">${v.contacts.map(c => `<option value="${esc(c.address)}">${esc(c.nom)}</option>`).join('')}</datalist></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" data-act="kycOn">Autoriser</button>
+          <button class="btn" data-act="kycOff">Retirer l'autorisation</button>
+          <button class="btn" data-act="kycCheck">Vérifier</button>
+        </div>
+      </div>
+      ${autorises.length ? `<p class="note" style="margin-top:12px">Investisseurs autorisés sur cette offre :</p><div class="chips">${autorises.map(a => {
+        const nom = (v.contacts.find(c => eq(c.address, a)) || {}).nom; return `<span class="chip" title="${esc(a)}">${nom ? esc(nom) : short(a)}</span>`; }).join('')}</div>` : ''}
+    </div>`;
+  }
+
+  if(!sections) sections = '<div class="callout">Aucune action disponible pour votre compte sur cette offre.</div>';
+  return `<h3 style="margin-bottom:4px">Mes actions</h3>
+    <div class="muted">Compte connecté : ${addrLink(me.addr)} — ${roles.length ? roles.join(' · ') : 'investisseur non autorisé'} · solde ${fmtWei(me.solde)} ETH</div>
+    ${sections}`;
+}
+
+function renderJournal(v){
+  const rows = (v.ops || []).map(o => `<tr><td>${dt(o.ts)}</td><td>${OP_LABEL[o.type] || esc(o.type)}</td>
+    <td title="${esc(o.acteur)}">${o.acteur_nom ? esc(o.acteur_nom) : addrLink(o.acteur)}</td>
+    <td>${o.parts != null ? nf(o.parts) : ''}</td><td>${o.montant_eth != null ? ethFr(o.montant_eth) + ' ETH' : ''}</td>
+    <td>${txLink(o.tx, 'Etherscan ↗')}</td></tr>`);
+  if(v.db && v.db.created_tx) rows.push(`<tr><td>${dt(v.db.created_ts)}</td><td>${OP_LABEL.CREATION}</td>
+    <td>${v.db.vendeur_nom ? esc(v.db.vendeur_nom) : addrLink(v.db.vendeur)}</td><td></td><td></td><td>${txLink(v.db.created_tx, 'Etherscan ↗')}</td></tr>`);
+  return rows.length
+    ? `<table><tr><th>Date</th><th>Opération</th><th>Compte</th><th>Parts</th><th>Montant</th><th>Preuve</th></tr>${rows.join('')}</table>`
+    : '<p class="note">Aucune opération indexée pour le moment (la base a quelques secondes de retard sur la blockchain).</p>';
+}
+
+// Coût de l'achat, calculé en direct (jamais d'erreur « Montant ETH incorrect »).
+function updateCost(){
+  const box = $('offCostBox'), btn = $('offBuyBtn'), qtyEl = $('offQty');
+  if(!box || !btn || !qtyEl || !offreView || !offreView.me) return;
+  const v = offreView, q = qtyEl.value.trim();
+  const n = /^\d+$/.test(q) ? parseInt(q, 10) : 0;
+  let pb = null;
+  if(!n) pb = 'Entrez un nombre entier de parts (1 ou plus).';
+  else if(n > v.dispo) pb = `Il ne reste que ${nf(v.dispo)} part(s) disponible(s).`;
+  else if(!v.me.autorise) pb = 'Votre adresse n\'est pas encore autorisée par le conservateur.';
+  const cost = v.prix.mul(n || 0);
+  if(!pb && v.me.solde.lt(cost)) pb = 'Solde insuffisant pour cet achat (sans compter les frais de réseau).';
+  box.innerHTML = (n ? `Coût : <b>${fmtWei(cost)} ETH</b> <small>(${groupe(cost.toString())} wei)</small>` : '') +
+    ` <small>· Votre solde : ${fmtWei(v.me.solde)} ETH</small>` + (pb ? `<div class="msg err" style="margin-top:8px">${pb}</div>` : '');
+  btn.disabled = !!pb;
+  btn.textContent = n && !pb ? `Acheter ${nf(n)} part${n > 1 ? 's' : ''} pour ${fmtWei(cost)} ETH` : 'Acheter';
+}
+$('offActions').addEventListener('input', (e) => { if(e.target.id === 'offQty') updateCost(); });
+$('offHead').onclick = (e) => { if(e.target.closest('#btnOffReload') && offreCur) loadOffre(offreCur, { silent: true }); };
+
+function scheduleJournal(addr){
+  journalTimers.forEach(clearTimeout);
+  journalTimers = [5000, 15000, 30000, 60000].map(ms => setTimeout(() => { if(offreCur === addr) loadOffre(addr, { silent: true }); }, ms));
+}
+
+// ---------- actions (chaque bouton envoie une transaction signée par le portefeuille) ----------
+$('offActions').onclick = async (e) => {
+  const b = e.target.closest('[data-act]'); if(!b || !offreView) return;
+  const v = offreView, a = b.dataset.act, m = $('offMsg');
+  const qty = $('offQty');
+  if(a === 'connect'){ $('connectBtn').click(); return; }
+  if(a === 'qtyMinus'){ qty.value = Math.max(1, (parseInt(qty.value, 10) || 1) - 1); updateCost(); return; }
+  if(a === 'qtyPlus'){ qty.value = (parseInt(qty.value, 10) || 0) + 1; updateCost(); return; }
+  if(a === 'qtySet'){ qty.value = b.dataset.v; updateCost(); return; }
+  if(a === 'qtyMax'){ qty.value = v.dispo; updateCost(); return; }
+  if(a === 'copyMe'){ const ok = await copyText(v.me.addr); m.innerHTML = `<div class="msg ok">${ok ? 'Adresse copiée ✓ : envoyez-la au conservateur.' : 'Votre adresse : ' + v.me.addr}</div>`; return; }
+  if(!v.live) return;
+  const c = new ethers.Contract(v.addr, SALE_ABI, signer);
+  const apres = async () => { await loadOffre(v.addr, { silent: true }); scheduleJournal(v.addr); };
+  b.disabled = true;
+  try{
+    if(a === 'buy'){
+      const n = parseInt(qty.value, 10), cost = v.prix.mul(n);
+      if(!n || n > v.dispo || !v.me.autorise || v.me.solde.lt(cost)){ updateCost(); return; }
+      await runTx(m, `Achat de ${nf(n)} part(s)`, () => c.acheter(n, { value: cost }), apres, `Achat confirmé : ${nf(n)} part(s) pour ${fmtWei(cost)} ETH`);
+    }
+    else if(a === 'claim')   await runTx(m, 'Réclamation de vos parts', () => c.reclamerParts(), apres, 'Parts reçues');
+    else if(a === 'refund')  await runTx(m, 'Remboursement', () => c.rembourser(), apres, 'Remboursement effectué');
+    else if(a === 'withdraw')await runTx(m, 'Retrait des fonds', () => c.retirerFonds(), apres, 'Fonds retirés');
+    else if(a === 'recover') await runTx(m, 'Récupération des parts invendues', () => c.recupererPartsInvendues(), apres, 'Parts récupérées');
+    else if(a === 'deposit'){
+      const n = parseInt($('offDepN').value, 10);
+      if(!n || n < 1){ m.innerHTML = errBox('Indiquez le nombre de parts à déposer.'); return; }
+      if(BN.from(n).gt(v.me.partsToken)){ m.innerHTML = errBox(`Vous ne détenez que ${nf(num(v.me.partsToken))} part(s).`); return; }
+      const tok = new ethers.Contract(v.partsAddr, SEC_ABI, signer);
+      await runTx(m, `Dépôt de ${nf(n)} part(s)`, () => tok.transfer(v.addr, n), apres, `${nf(n)} part(s) déposée(s)`);
+    }
+    else if(a === 'kycOn' || a === 'kycOff' || a === 'kycCheck'){
+      const who = $('offKycAddr').value.trim();
+      if(!ethers.utils.isAddress(who)){ m.innerHTML = errBox('Adresse de l\'investisseur invalide.'); return; }
+      if(a === 'kycCheck'){ const r = await c.autorise(who); m.innerHTML = `<div class="msg ok">${short(who)} est ${r ? '<b>autorisé ✓</b>' : '<b>non autorisé</b>'} sur cette offre.</div>`; return; }
+      await runTx(m, a === 'kycOn' ? 'Autorisation de l\'investisseur' : 'Retrait de l\'autorisation', () => c.autoriser(who, a === 'kycOn'), apres,
+        a === 'kycOn' ? `${short(who)} est autorisé` : `Autorisation retirée pour ${short(who)}`);
+    }
+  }finally{ b.disabled = false; }
+};
+
+// ---------- horloge, actualisation automatique ----------
+setInterval(() => {
+  document.querySelectorAll('[data-fin]').forEach(el => { const r = el.dataset.fin - Date.now() / 1000; el.textContent = r > 0 ? fmtDuree(r) : 'Terminée'; });
+  const v = offreView, cd = $('offCountdown');
+  if(v && cd){
+    const r = remaining(v);
+    if(r > 0) cd.textContent = fmtDuree(r);
+    else if(!v._renduTermine && !v._rechargement){ v._rechargement = true; loadOffre(v.addr, { silent: true }); }  // la date de fin vient de passer : on relit l'état
+  }
+}, 1000);
+setInterval(() => {
+  const ae = document.activeElement;
+  const saisie = ae && ae.closest && ae.closest('#offActions') && /INPUT|SELECT/.test(ae.tagName);
+  if(offreCur && $('offres').classList.contains('active') && !saisie) loadOffre(offreCur, { silent: true });
+}, 20000);
+
 if('serviceWorker' in navigator){ window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{})); }
 </script>
 </body>

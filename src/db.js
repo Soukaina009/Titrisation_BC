@@ -44,6 +44,40 @@ CREATE TABLE IF NOT EXISTS titrisations (
   created_ts    INTEGER,
   created_tx    TEXT
 );
+-- Offres publiques de parts (ICO / STO). Les montants en wei sont en TEXT : ils dépassent 2^63 (9,2 ETH).
+CREATE TABLE IF NOT EXISTS offres (
+  contrat          TEXT PRIMARY KEY,
+  parts_contrat    TEXT,
+  token_id         INTEGER,
+  vendeur          TEXT,
+  prix_wei         TEXT,
+  objectif_wei     TEXT,
+  fin_ts           INTEGER,
+  collecte_wei     TEXT DEFAULT '0',
+  rembourse_wei    TEXT DEFAULT '0',
+  parts_deposees   INTEGER DEFAULT 0,
+  parts_vendues    INTEGER DEFAULT 0,
+  parts_reclamees  INTEGER DEFAULT 0,
+  parts_recuperees INTEGER DEFAULT 0,
+  fonds_retires    INTEGER DEFAULT 0,
+  created_block    INTEGER,
+  created_ts       INTEGER,
+  created_tx       TEXT
+);
+CREATE TABLE IF NOT EXISTS operations_offre (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  offre       TEXT NOT NULL,
+  type        TEXT NOT NULL,
+  acteur      TEXT,
+  parts       INTEGER,
+  montant_wei TEXT,
+  block       INTEGER,
+  log_index   INTEGER,
+  ts          INTEGER,
+  tx          TEXT,
+  UNIQUE (tx, log_index)
+);
+CREATE INDEX IF NOT EXISTS idx_op_offre ON operations_offre (offre);
 CREATE TABLE IF NOT EXISTS contacts (
   address TEXT PRIMARY KEY,
   nom     TEXT NOT NULL
@@ -68,7 +102,7 @@ const setMeta = (db, key, value) =>
 
 // Vide tout ce qui vient de la blockchain (le carnet d'adresses est conservé) pour reconstruire la base.
 function resetChainData(db) {
-  db.exec('DELETE FROM parcelles; DELETE FROM evenements; DELETE FROM titrisations; DELETE FROM meta;');
+  db.exec('DELETE FROM parcelles; DELETE FROM evenements; DELETE FROM titrisations; DELETE FROM offres; DELETE FROM operations_offre; DELETE FROM meta;');
 }
 
 module.exports = { open, getMeta, setMeta, resetChainData };

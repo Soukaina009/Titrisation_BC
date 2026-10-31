@@ -4,8 +4,8 @@ Application web complète pour le registre foncier sur blockchain, construite en
 
 | Partie | Rôle | Fichiers |
 |---|---|---|
-| **Interface (UI)** | Consulter, immatriculer, vendre, titriser, tableau de bord | `public/index.html` (PWA installable) |
-| **KPIs** | Indicateurs calculés en SQL à partir de la base | `src/kpis.js` → `GET /api/kpis` |
+| **Interface (UI)** | Consulter, immatriculer, vendre, titriser, **offres de parts (ICO/STO)**, tableau de bord | `public/index.html` (PWA installable) |
+| **KPIs** | Indicateurs calculés à partir de la base (dont les offres : `src/offres.js`) | `src/kpis.js` → `GET /api/kpis` |
 | **Base de données** | SQLite : copie interrogeable de la blockchain + carnet d'adresses | `src/db.js`, `src/indexer.js`, `data/registre.db` |
 
 ```
@@ -27,7 +27,7 @@ Prérequis : Node.js 18 ou plus récent.
 ```bash
 npm install
 cp .env.example .env      # sous Windows : copy .env.example .env
-# éditez .env : REGISTRY_ADDRESS, FACTORY_ADDRESS, START_BLOCK
+# éditez .env : REGISTRY_ADDRESS, FACTORY_ADDRESS, SALE_FACTORY_ADDRESS, START_BLOCK
 npm start
 ```
 
@@ -40,10 +40,27 @@ le lien de la transaction (« at txn ») → notez le **Block** : c'est votre `S
 date de déploiement, plus la première synchronisation est rapide.
 
 ## Ce que montre le tableau de bord
-Parcelles, superficie totale et moyenne, propriétaires distincts, transferts validés, ventes en attente
+Parcelles, superficie totale et moyenne, offres de parts (en cours / réussies / échouées, ETH levés, investisseurs), propriétaires distincts, transferts validés, ventes en attente
 (dernier événement d'une parcelle = proposition non validée ni annulée), titrisations (actives / total),
 parts émises, répartition par ville, immatriculations par jour, activité récente, registre complet avec recherche,
 carnet d'adresses.
+
+## Offres publiques de parts (ICO / STO)
+Onglet **💰 Offres** : le bénéficiaire d'une parcelle titrisée lève des fonds en vendant une partie de ses parts contre de l'ETH.
+
+1. **Créer** (bénéficiaire) : parcelle, nombre de parts, prix d'une part, objectif minimal (% de l'offre) et durée. L'interface lance 2 transactions : création de l'offre (via la `LandPartsSaleFactory`) puis dépôt des parts.
+2. **Autoriser** (conservateur) : chaque investisseur est validé offre par offre (KYC, la vérification d'identité se fait hors blockchain).
+3. **Acheter** (investisseur autorisé) : le coût exact en ETH est calculé par l'interface. Parts et ETH restent en séquestre dans le contrat.
+4. **À la fin** : objectif atteint → les investisseurs **réclament** leurs parts et le vendeur **retire** les fonds ; sinon → chacun est **remboursé** et le vendeur **récupère** ses parts.
+
+Chaque transaction affiche un lien **Etherscan** de vérification, et le **journal des opérations** de l'offre (alimenté par l'indexeur) donne un lien de preuve par ligne.
+
+### Mise en place
+1. Dans Remix, compilez `contracts/LandPartsSaleFactory.sol` (Solidity 0.8.20+) et déployez **uniquement** `LandPartsSaleFactory` avec 2 paramètres : l'adresse du `LandTitleRegistry` et celle de la `LandSecuritizationFactory` (la Factory de titrisation).
+2. Ajoutez l'adresse obtenue dans `.env` : `SALE_FACTORY_ADDRESS=0x...` (ou dans l'onglet Offres, champ « Adresse du contrat LandPartsSaleFactory »).
+3. Redémarrez `npm start` (pas besoin de `npm run reindex` : l'indexeur continue là où il en était).
+
+Les offres créées avant ce déploiement (contrats déployés à la main dans Remix) ne sont pas suivies par l'application.
 
 ## API
 | Route | Contenu |
@@ -53,6 +70,8 @@ carnet d'adresses.
 | `GET /api/parcelles?q=` | liste/recherche (titre, ville, propriétaire, nom, tokenId) |
 | `GET /api/parcelles/:id` | une parcelle + historique + titrisation |
 | `GET /api/titrisations` | contrats de titrisation |
+| `GET /api/offres?parcelle=` | offres de parts (statut, progression, montants) |
+| `GET /api/offres/:adresse` | une offre + journal de ses opérations |
 | `GET/PUT /api/contacts` | carnet d'adresses (`PUT` avec `{"nom": "..."}`, nom vide = suppression) |
 
 ## Mise en ligne (accès depuis un téléphone)
@@ -67,8 +86,11 @@ retienne l'adresse de l'API.
 - Le carnet d'adresses n'a **pas d'authentification** : à protéger avant une vraie mise en ligne.
 - La base est une copie : le tableau de bord a quelques secondes de retard sur la blockchain (`POLL_MS`, `CONFIRMATIONS`).
 - La localisation et la superficie sont lues sur le contrat au moment de l'indexation (elles ne changent pas).
+- L'autorisation KYC est propre à **chaque offre** (un investisseur doit être ré-autorisé sur une nouvelle offre).
+- La date de fin d'une offre se base sur l'heure de la blockchain ; l'état « Réussie / Échouée » de la liste vient de l'horloge du serveur (écart de quelques secondes possible).
 - Un vrai système lierait chaque adresse à une identité (CIN) **hors blockchain**, dans une base protégée : le carnet d'adresses en est la maquette.
 
 ## Contrats
-`contracts/LandTitleRegistry.sol` (registre ERC-721 + rôle conservateur) et `contracts/LandSecuritizationToken.sol`
-(titrisation + Factory). Déploiement avec Remix, comme avant.
+`contracts/LandTitleRegistry.sol` (registre ERC-721 + rôle conservateur), `contracts/LandSecuritizationToken.sol`
+(titrisation + Factory) et `contracts/LandPartsSaleFactory.sol` (offre publique `LandPartsSale` + Factory d'offres).
+Déploiement avec Remix, comme avant.
